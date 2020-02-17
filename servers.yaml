@@ -1,0 +1,35 @@
+---
+#
+# The default settings for all nodes
+#
+defaults:
+  domain_name:     example.com
+  cpucount:         1
+  box:              enterprisemodules/centos-7.3-x86_64-nocm
+  virtualboxorafix: enable
+#
+# The default settings for all ML nodes
+#
+ml-defaults:
+  type:             masterless
+#
+# The default settings for all PE nodes
+#
+pe-defaults:
+  type:             pe-agent
+  puppet_master:    dbmaster
+
+#
+# The settings for the Puppet Enterprise Server
+#
+pe-master:
+  public_ip:       '192.168.253.10'
+  cpucount:         2
+  ram:              3072
+  type:             pe-master
+  puppet_installer: puppet-enterprise-2019.3.0-el-7-x86_64/puppet-enterprise-installer
+#
+# 
+#
+pe-db190:
+  public_ip:        '192.168.253.190'

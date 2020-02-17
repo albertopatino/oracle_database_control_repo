@@ -1,0 +1,46 @@
+---
+#
+# Application specific stuff
+#
+ora_profile::database::db_tablespaces::list:
+  MYAPP_APP_TS_1:
+    ensure:     present
+    autoextend: 'on'
+    max_size:   10G
+    next:       2G
+    size:       5G
+  MYAPP_APP_TS_2:
+    ensure:     present
+    autoextend: 'on'
+    max_size:   10G
+    next:       2G
+    size:       5G
+  MYAPP_APP_TS_3:
+    ensure:     present
+    autoextend: 'on'
+    max_size:   10G
+    next:       2G
+    size:       5G
+
+ora_profile::database::db_profiles::list:
+  MYAPP_PROFILE:
+    ensure:                     present
+    failed_login_attempts:      5
+    password_grace_time:        5
+    password_life_time:         90
+    sessions_per_user:          10
+
+ora_profile::database::db_users::list:
+  MYAPP_1:
+    ensure:               present
+    password:             secretstuff
+    default_tablespace:   MYAPP_APP_TS_1
+    expired:              'true'
+    locked:               'true'
+    profile:              MYAPP_PROFILE
+  MYAPP_2:
+    ensure:               present
+    default_tablespace:   MYAPP_APP_TS_1
+    expired:              'true'
+    locked:               'true'
+    profile:              MYAPP_PROFILE
