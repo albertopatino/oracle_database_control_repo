@@ -1,8 +1,10 @@
 ## Step by step guide to install an Oracle node with Puppet Enterprise
 
-This guide will walk you through using Puppet Enterprise to install and configure an Oracle19 Database. 
+This guide will walk you through using Puppet Enterprise to install and configure an Oracle19 Database in a lab or demo environment. This could be as small as a single virtual machine, or a handful of instances running on Amazon EC2. At the end of the guide are some tips on integrating this work into your own production repository.
 
 [before you begin]
+
+- Set up your lab environment as needed.
 - [Install Puppet Enterprise with ten nodes free](https://www.puppet.com/docs/pe/2019.2/installing.html)
 
 
@@ -23,7 +25,7 @@ After your request for a license, Enterprise Modules will send you an entitlemen
 
 ```bash
 # Clone your copy of the repo to your working folder
-$ git clone https://github.com/your_own_github_account/oracle_database_control_repo.git 
+$ git clone https://github.com/your_own_github_account/oracle_database_control_repo.git
 $ cd oracle_database_control_repo
 # Copy the entitlement file to the correct place
 $ cp /downloaddir/your_license_file.entitlements modules/em_license/files
@@ -36,7 +38,7 @@ $ git push
 
 ### 3. Download the required Oracle software and put it on the puppet server
 
-Because of Oracle licensing restrictions, you need to request and download the Oracle software yourself. You need to have an Oracle account to download this software. We have set up the demo control repo to install Oracle 19. So you need to download the Oracle 19 software. Goto the [Oracle website](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html) and download the `LINUX.X64_193000_db_home.zip` file. 
+Because of Oracle licensing restrictions, you need to request and download the Oracle software yourself. You need to have an Oracle account to download this software. We have set up the demo control repo to install Oracle 19. So you need to download the Oracle 19 software. Goto the [Oracle website](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html) and download the `LINUX.X64_193000_db_home.zip` file.
 
 We have set up this demo to use the Puppet server as a download server. This means that you'll put the Oracle zip file in the webserver directory from the Puppet server:
 
@@ -75,7 +77,7 @@ Now all changes made to your control repository are available on the Puppet Serv
 
 ### 5. Create a node group and add configuration settings
 
-You need to tell the Puppet classifier which nodes will be Oracle database nodes. To do this, you will create a node group specific for Oracle 19 database hosts. Log-in to the Puppet Enterprise console (https://master-fqdn:443 by default) 
+You need to tell the Puppet classifier which nodes will be Oracle database nodes. To do this, you will create a node group specific for Oracle 19 database hosts. Log-in to the Puppet Enterprise console (https://master-fqdn:443 by default)
 
 Use the "Configure -> Classification" menu to create a node group.
 
@@ -91,7 +93,7 @@ Next, add the parameter `dbname` parameter to this class and set it to the name 
 
 Now you have finished your essential set up. You are no ready to add nodes to this node group.
 
-### 6. Connect nodes to Puppet Enterprise and prepare them for running Puppet 
+### 6. Connect nodes to Puppet Enterprise and prepare them for running Puppet
 
 Follow the instructions in the "Setup -> Unsigned certs" menu to connect non-production nodes that you want to install the Oracle software on.
 
@@ -117,7 +119,7 @@ In the Puppet Enterprise console, you can see all the changes Puppet made. Use t
 
 ### 8. Change the Oracle configuration
 
-In step 5, you created a very standard database. But the Puppet modules for Oracle allow you to add all sorts of additional settings. Let's assume for this example that you need to have a database landing zone for an application called: `MYAPP`. 
+In step 5, you created a very standard database. But the Puppet modules for Oracle allow you to add all sorts of additional settings. Let's assume for this example that you need to have a database landing zone for an application called: `MYAPP`.
 
 In the control rep create a node specific yaml file `data/nodes/yournode.yourdomain.yaml` (change this into the nodename you are testing the Oracle installtion on) and add this code:
 
@@ -202,6 +204,16 @@ Rerun Puppet on the nodes, use the "Run -> Puppet" menu to Run Puppet on the nod
 
 ![](./security-changes.png)
 ![](how-to-automate-oracle-installations-and-management/security-changes.png)
+
+
+### 9. Deploy a database into production
+
+Now you know how to set up, configure, and secure an Oracle database. The next step is to deploy one into production! Since we're using Puppet, that's as simple as adding the Enterprise Modules Oracle modules to your production control repository, copying your Hiera data, and classifying one or more nodes to be your new Oracle servers.
+
+---- add any more specific instructions here ----
+
+When you're done, clean up and dispose of your lab environment as needed.
+
 
 ### Want to know more?
 
