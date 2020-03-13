@@ -283,6 +283,19 @@ lookup_options:
 ora_profile::database::db_definition::init_ora_template:                  "profile/init.ora.19.0.0.0.erb"
 ```
 
+**Set passwords**
+
+In the lab set up, we used automatically generated passwords. For production, we strongly recommend using your own specific values. You need to put these password values in your node hiera data or to the classifier. We also strongly recommend you encrypt these values with eayml:
+
+```yaml
+ora_profile::database::os_user_password:                your_hashed_value     # Is the hashed value of the password used for the oracle os user
+ora_profile::database::db_definition::system_password:  your_system_password
+ora_profile::database::db_definition::sys_password:     your_sys_password
+```
+
+Check the [Oracle documentation](https://docs.oracle.com/en/database/oracle/oracle-database/12.2/dbseg/configuring-authentication.html#GUID-1168CD4D-659E-432D-9CB7-F5733129657D) for the password requirements.
+
+
 **init.ora settings**
 
 The latest step is to tell the modules what values to put in your `init.ora` file. The last line of your hiera data tells Puppet where to find a ERB-template of this file. In this example, we have put it in our `profile` module, but you can put it wherever you want. We recommend you use [the file from the example control repository](https://github.com/enterprisemodules/oracle_database_control_repo/blob/production/modules/profile/templates/init.ora.19.0.0.0.erb) as a starting point and modify it to your requirements.
