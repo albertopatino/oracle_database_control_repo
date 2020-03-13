@@ -206,14 +206,90 @@ Rerun Puppet on the nodes, use the "Run -> Puppet" menu to run Puppet on the nod
 ![](how-to-automate-oracle-installations-and-management/security-changes.png)
 
 
-### 9. Deploy a database into production
+### 10. Deploy a database into production
 
-Now you know how to set up, configure, and secure an Oracle database. The next step is to deploy one into production! Since we're using Puppet, that's as simple as adding the Enterprise Modules Oracle modules to your production control repository, copying your Hiera data, and classifying one or more nodes to be your new Oracle servers.
+Now you know how to set up, configure, and secure an Oracle database. When you're done, clean up and dispose of your lab environment as needed.
 
----- add any more specific instructions here ----
+The next step is to deploy one into production! Since we're using Puppet, that's as simple as adding the required Puppet modules to your production control repository, copying your Hiera data, and classifying one or more nodes to be your new Oracle servers.
 
-When you're done, clean up and dispose of your lab environment as needed.
+**Puppetfile**
 
+Here are the specific modules for Oracle that you need to add to your `Puppetfile`:
+
+```
+mod 'enterprisemodules-ora_config'
+mod 'enterprisemodules-easy_type'
+mod 'enterprisemodules-ora_install'
+mod 'enterprisemodules-ora_profile'
+mod 'enterprisemodules-ora_cis'
+```
+
+Next to Oracle-specific modules, you also need to ensure that some other, more generic, modules are available:
+
+```
+mod 'puppetlabs-stdlib'
+mod 'puppetlabs-pwshlib'
+mod 'puppetlabs-concat'
+mod 'stm-debconf'
+mod 'saz-limits'
+mod 'puppet-archive'
+mod 'ipcrm-echo'
+mod 'herculesteam-augeasproviders_core'
+mod 'herculesteam-augeasproviders_sysctl'
+mod 'puppetlabs-firewall'
+mod 'puppet-firewalld'
+```
+Pin the versions of all modules to the versions you need.
+
+**Hiera data**
+
+The next step is to add the default settings in your hiera data. Here is the basic set of hiera data needed:
+
+```yaml
+#
+# Use the puppet server as the source for downloads for the Oracle software
+#
+ora_profile::database::source:                                            "https://%{puppet_server}:8140/packages"
+#
+# The settings we need for Oracle 19 databases
+#
+ora_profile::database::version:                                           19.0.0.0
+ora_profile::database::oracle_home:                                       /u01/app/oracle/product/19.0.0.0/db_home1
+ora_profile::database::db_software::database_type:                        EE
+ora_profile::database::db_software::file_name:                            LINUX.X64_193000_db_home
+ora_profile::database::db_software::dirs:
+- /u01/app/oracle/product
+- /u01/app/oracle/product/19.0.0.0
+ora_profile::database::db_listener::sqlnet_version:                       '19.0'
+#
+# To get started we skip installing opatch and applying Oracle patches
+#
+ora_profile::database::db_patches:                                        skip
+#
+# Set lookup merge behaviour. So values from your node hieradata and these settings will be merged
+#
+lookup_options:
+  "^ora_profile::database::(.*)::(.*)":
+    merge:
+      strategy: deep
+      merge_hash_arrays: true
+  ora_profile::database::cis_rules::ignore:
+    merge:
+      strategy: deep
+      merge_hash_arrays: true
+#
+# Tell Puppet what template it has to use for your init.ora file.
+#
+ora_profile::database::db_definition::init_ora_template:                  "profile/init.ora.19.0.0.0.erb"
+```
+
+**init.ora settings**
+
+The latest step is to tell the modules what values to put in your `init.ora` file. The last line of your hiera data tells Puppet where to find a ERB-template of this file. In this example, we have put it in our `profile` module, but you can put it wherever you want. We recommend you use [the file from the example control repository](https://github.com/enterprisemodules/oracle_database_control_repo/blob/production/modules/profile/templates/init.ora.19.0.0.0.erb) as a starting point and modify it to your requirements.
+
+**Ready for Production**
+
+After these steps, you can start using Puppet to manage all of your Oracle nodes.
 
 ### Want to know more?
 
