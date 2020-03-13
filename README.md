@@ -1,8 +1,10 @@
 ## Step by step guide to install an Oracle node with Puppet Enterprise
 
-This guide will walk you through using Puppet Enterprise to install and configure an Oracle19 Database.
+This guide will walk you through using Puppet Enterprise to install and configure an Oracle19 Database in a lab or demo environment. This could be as small as a single virtual machine, or a handful of instances running on Amazon EC2. At the end of the guide are some tips on integrating this work into your own production repository.
 
 [before you begin]
+
+- Set up your lab environment as needed.
 - [Install Puppet Enterprise with ten nodes free](https://www.puppet.com/docs/pe/2019.2/installing.html)
 
 
@@ -36,7 +38,7 @@ $ git push
 
 ### 3. Download the required Oracle software and put it on the puppet server
 
-Because of Oracle licensing restrictions, you need to request and download the Oracle software yourself. You need to have an Oracle account to download this software. We have set up the demo control repo to install Oracle 19 so make sure to download that version. Go to the [Oracle website](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html) and download the `LINUX.X64_193000_db_home.zip` file.
+Because of Oracle licensing restrictions, you need to request and download the Oracle software yourself. You need to have an Oracle account to download this software. We have set up the demo control repo to install Oracle 19. So you need to download the Oracle 19 software. Goto the [Oracle website](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html) and download the `LINUX.X64_193000_db_home.zip` file.
 
 We have set up this demo to use the Puppet server as a download server. This means that you'll put the Oracle zip file in the webserver directory from the Puppet server:
 
@@ -202,6 +204,16 @@ Rerun Puppet on the nodes, use the "Run -> Puppet" menu to run Puppet on the nod
 
 ![](./security-changes.png)
 ![](how-to-automate-oracle-installations-and-management/security-changes.png)
+
+
+### 9. Deploy a database into production
+
+Now you know how to set up, configure, and secure an Oracle database. The next step is to deploy one into production! Since we're using Puppet, that's as simple as adding the Enterprise Modules Oracle modules to your production control repository, copying your Hiera data, and classifying one or more nodes to be your new Oracle servers.
+
+---- add any more specific instructions here ----
+
+When you're done, clean up and dispose of your lab environment as needed.
+
 
 ### Want to know more?
 
