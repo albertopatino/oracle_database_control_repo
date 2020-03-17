@@ -1,6 +1,9 @@
 ## Step by step guide to install an Oracle node with Puppet Enterprise
 
-This guide will walk you through using Puppet Enterprise to install and configure an Oracle19 Database in a lab or demo environment. This could be as small as a single virtual machine, or a handful of instances running on Amazon EC2. At the end of the guide are some tips on integrating this work into your own production repository.
+This guide will walk you through using Puppet Enterprise to install and configure an Oracle19 Database. We have organized this in two parts. The first part (steps 1 to 9) is to make it as easy as possible to use Puppet to install and manage an Oracle database. We suggest you use this in a lab or demo environment. This could be as small as a single virtual machine, or a handful of instances running on Amazon EC2. 
+
+Part 2 (step 10) describes what you have to do to run this in production. It will provide you with some tips on integrating this work into your own production repository.
+
 
 [before you begin]
 
@@ -241,9 +244,13 @@ mod 'puppet-firewalld'
 ```
 We suggest pinning to known good versions of all modules in your `Puppetfile`.
 
+**Download server**
+
+In step 3 we mentioned that, for the sake of simplicity, we were using the Puppet server as a download server. We don't recommend this for production servers. Recommended is to use an artifact server. If you don't have an artifact server yet, this might be an excellent time to take a quick break and set up [Artifactory](https://forge.puppet.com/fervid/artifactory).
+
 **Hiera data**
 
-The next step is to add the default settings in your hiera data. If you don't have an artifact server yet, this might be a good time to take a quick break and set up [Artifactory](https://forge.puppet.com/fervid/artifactory).
+The next step is to add the default settings in your hiera data. 
 
 Here is the basic set of Hiera data you'll need:
 
@@ -296,8 +303,9 @@ ora_profile::database::db_definition::sys_password:     your_sys_password
 
 Check the [Oracle documentation](https://docs.oracle.com/en/database/oracle/oracle-database/12.2/dbseg/configuring-authentication.html#GUID-1168CD4D-659E-432D-9CB7-F5733129657D) for the password requirements.
 
+The value `ora_profile::database::os_user_password` is used by Puppet to manage a [User resource](https://puppet.com/docs/puppet/latest/types/user.html#user). Check the [Puppet documentation](https://puppet.com/docs/puppet/latest/types/user.html#user-attribute-password) on the hashing required for this password value.
 
-** `init.ora` settings**
+**`init.ora`settings**
 
 The latest step is to tell the modules what values to put in your `init.ora` file. The last line of your hiera data tells Puppet where to find a ERB-template of this file. In this example, we have put it in our `profile` module, but you can put it wherever you want. We recommend you use [the file from the example control repository](https://github.com/enterprisemodules/oracle_database_control_repo/blob/production/modules/profile/templates/init.ora.19.0.0.0.erb) as a starting point and modify it to your requirements.
 
