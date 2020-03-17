@@ -38,9 +38,9 @@ $ git push
 
 ### 3. Download the required Oracle software and put it on the puppet server
 
-Because of Oracle licensing restrictions, you need to request and download the Oracle software yourself. You need to have an Oracle account to download this software. We have set up the demo control repo to install Oracle 19. So you need to download the Oracle 19 software. Goto the [Oracle website](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html) and download the `LINUX.X64_193000_db_home.zip` file.
+Because of Oracle licensing restrictions, you need to request and download the Oracle software yourself. You need to have an Oracle account to download this software. We have set up the demo control repo to install Oracle 19. So you need to download the Oracle 19 software. Go to the [Oracle website](https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html) and download the `LINUX.X64_193000_db_home.zip` file.
 
-We have set up this demo to use the Puppet server as a download server. This means that you'll put the Oracle zip file in the webserver directory from the Puppet server:
+Since this is a demo environment, we're taking a shortcut and are using the Puppet server as a download server. This means that you'll put the Oracle zip file in the webserver directory from the Puppet server. In production, you'd want to store this install file in an artifact server like Artifactory instead.
 
 ```bash
 $ cp /downloaddir/LINUX.X64_193000_db_home.zip /opt/puppetlabs/server/data/packages/public
@@ -112,7 +112,7 @@ The node is now fully configured to run Puppet and let Puppet install an Oracle 
 
 The deployment takes from 20 to 50 minutes. The actual speed depends on the speed of the CPU and the amount of memory available to the node.
 
-In the Puppet Enterprise console, you can see all the changes Puppet made. Use the "Reports" menu and select the latest report from your Oracle node. Here you see all changes that Puppet made to the system to create the running Oracle 19 Database.
+When it's done, you can see all the changes Puppet made using the Puppet Enterprise Console. Use the "Reports" menu and select the latest report from your Oracle node. Here you see all changes that Puppet made to the system to create the running Oracle 19 Database.
 
 ![](./see-changes.png)
 ![](how-to-automate-oracle-installations-and-management/see-changes.png)
@@ -121,7 +121,7 @@ In the Puppet Enterprise console, you can see all the changes Puppet made. Use t
 
 In step 5, you created a very standard database. But the Puppet modules for Oracle allow you to add all sorts of additional settings. Let's assume for this example that you need to have a database landing zone for an application called: `MYAPP`.
 
-In the control rep create a node specific yaml file `data/nodes/yournode.yourdomain.yaml` (change this into the nodename you are testing the Oracle installation on) and add this code:
+Create a node specific yaml file in your control repository's Hiera data layer called `data/nodes/yournode.yourdomain.yaml` (change this into the nodename you are testing the Oracle installation on) and add this code:
 
 ```yaml
 ---
@@ -172,7 +172,7 @@ ora_profile::database::db_users::list:
     profile:              MYAPP_PROFILE
 ```
 
-Now add these settings to your control repo and redeploy the environment on the Puppet server.
+Now add this yaml file to your control repo and redeploy the environment on the Puppet server.
 
 ```bash
 # Commit it to your git
@@ -224,7 +224,7 @@ mod 'enterprisemodules-ora_profile'
 mod 'enterprisemodules-ora_cis'
 ```
 
-Next to Oracle-specific modules, you also need to ensure that some other, more generic, modules are available:
+Since the Oracle modules use resources and functionality from other modules in the ecosystem, you'll also need to make sure that all the dependencies are available too:
 
 ```
 mod 'puppetlabs-stdlib'
@@ -239,16 +239,17 @@ mod 'herculesteam-augeasproviders_sysctl'
 mod 'puppetlabs-firewall'
 mod 'puppet-firewalld'
 ```
-Pin the versions of all modules to the versions you need.
+We suggest pinning to known good versions of all modules in your `Puppetfile`.
 
 **Hiera data**
 
-The next step is to add the default settings in your hiera data. Here is the basic set of hiera data needed:
+The next step is to add the default settings in your hiera data. If you don't have an artifact server yet, this might be a good time to take a quick break and set up [Artifactory](https://forge.puppet.com/fervid/artifactory).
+
+Here is the basic set of Hiera data you'll need:
 
 ```yaml
 #
-# Use the puppet server as the source for downloads for the Oracle software
-#
+# The download source for the Oracle software. Change this to your local artifact server.
 ora_profile::database::source:                                            "https://%{puppet_server}:8140/packages"
 #
 # The settings we need for Oracle 19 databases
@@ -285,7 +286,7 @@ ora_profile::database::db_definition::init_ora_template:                  "profi
 
 **Set passwords**
 
-In the lab set up, we used automatically generated passwords. For production, we strongly recommend using your own specific values. You need to put these password values in your node hiera data or to the classifier. We also strongly recommend you encrypt these values with eayml:
+In the lab set up, we used automatically generated passwords. For production, we strongly recommend using your own specific values. You need to put these password values in your node hiera data or to the classifier. We also strongly recommend you encrypt these values with [Hiera eyaml](https://github.com/voxpupuli/hiera-eyaml):
 
 ```yaml
 ora_profile::database::os_user_password:                your_hashed_value     # Is the hashed value of the password used for the oracle os user
@@ -296,7 +297,7 @@ ora_profile::database::db_definition::sys_password:     your_sys_password
 Check the [Oracle documentation](https://docs.oracle.com/en/database/oracle/oracle-database/12.2/dbseg/configuring-authentication.html#GUID-1168CD4D-659E-432D-9CB7-F5733129657D) for the password requirements.
 
 
-**init.ora settings**
+** `init.ora` settings**
 
 The latest step is to tell the modules what values to put in your `init.ora` file. The last line of your hiera data tells Puppet where to find a ERB-template of this file. In this example, we have put it in our `profile` module, but you can put it wherever you want. We recommend you use [the file from the example control repository](https://github.com/enterprisemodules/oracle_database_control_repo/blob/production/modules/profile/templates/init.ora.19.0.0.0.erb) as a starting point and modify it to your requirements.
 
